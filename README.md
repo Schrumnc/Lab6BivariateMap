@@ -55,7 +55,6 @@ var mymap = L.map('map', {
 });
 
 L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png').addTo(mymap);
-# Airbnb Listings
 var airbnb_listings = null;
 
 var colors = chroma.scale('Dark2').mode('lch').colors(3);
@@ -77,3 +76,49 @@ airbnb_listings = L.geoJson.ajax("assets/airbnb_listings.geojson",{
     },
     attribution: 'Airbnb Listings &copy; Inside Airbnb | Asheville Zoning Districts &copy; City of Asheville Open Data | Base Map &copy; CartoDB | Map: JSugg'
 }).addTo(mymap);
+colors = chroma.scale('Purples').colors(5);
+
+function setColor(density) {
+    var id = 0;
+    if (density > 106) { id = 4; }
+    else if (density > 79 && density <= 106) { id = 3; }
+    else if (density > 52 && density <= 79) { id = 2; }
+    else if (density > 25 &&  density <= 52) { id = 1; }
+    else  { id = 0; }
+    return colors[id];
+}
+
+function style(feature) {
+    return {
+        fillColor: setColor(feature.properties.total_bnbs),
+        fillOpacity: 0.4,
+        weight: 2,
+        opacity: 1,
+        color: '#b4b4b4',
+        dashArray: '4'
+    };
+}
+
+L.geoJson.ajax("assets/zoning_districts.geojson", {
+    style: style
+}).addTo(mymap);
+var legend = L.control({position: 'topright'});
+
+legend.onAdd = function () {
+    var div = L.DomUtil.create('div', 'legend');
+    div.innerHTML += '<b>Airbnbs per District</b><br />';
+    div.innerHTML += '<i style="background: ' + colors[4] + '; opacity: 0.5"></i><p>107+</p>';
+    div.innerHTML += '<i style="background: ' + colors[3] + '; opacity: 0.5"></i><p>80-106</p>';
+    div.innerHTML += '<i style="background: ' + colors[2] + '; opacity: 0.5"></i><p>53-79</p>';
+    div.innerHTML += '<i style="background: ' + colors[1] + '; opacity: 0.5"></i><p>26-52</p>';
+    div.innerHTML += '<i style="background: ' + colors[0] + '; opacity: 0.5"></i><p> 0-25</p>';
+    div.innerHTML += '<hr><b>Property Type<b><br />';
+    div.innerHTML += '<i class="fab fa-airbnb marker-color-1"></i><p>Entire house</p>';
+    div.innerHTML += '<i class="fab fa-airbnb marker-color-2"></i><p>Private room in house</p>';
+    div.innerHTML += '<i class="fab fa-airbnb marker-color-3"></i><p>Other</p>';
+    return div;
+};
+
+legend.addTo(mymap);
+
+L.control.scale({position: 'bottomleft'}).addTo(mymap);
