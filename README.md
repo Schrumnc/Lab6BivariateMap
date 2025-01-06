@@ -55,3 +55,25 @@ var mymap = L.map('map', {
 });
 
 L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png').addTo(mymap);
+# Airbnb Listings
+var airbnb_listings = null;
+
+var colors = chroma.scale('Dark2').mode('lch').colors(3);
+
+for (i = 0; i < 3; i++) {
+    $('head').append($("<style> .marker-color-" + (i + 1).toString() + " { color: " + colors[i] + "; font-size: 25px; text-shadow: 0 0 3px #ffffff;} </style>"));
+}
+
+airbnb_listings = L.geoJson.ajax("assets/airbnb_listings.geojson",{
+    onEachFeature: function (feature, layer) {
+        layer.bindPopup(feature.properties.property_t);
+    },
+    pointToLayer: function(feature, latlng) {
+        var id = 0;
+        if (feature.properties.property_t == "Entire house") { id = 0; }
+        else if (feature.properties.property_t == "Private room in house")  { id = 1; }
+        else { id = 2;}
+        return L.marker(latlng, {icon: L.divIcon({className: 'fab fa-airbnb marker-color-' + (id + 1).toString() })});
+    },
+    attribution: 'Airbnb Listings &copy; Inside Airbnb | Asheville Zoning Districts &copy; City of Asheville Open Data | Base Map &copy; CartoDB | Map: JSugg'
+}).addTo(mymap);
